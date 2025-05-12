@@ -6,79 +6,35 @@ from aiohttp import ClientSession
 KEYWORDS_REGEX = re.compile(r""""keywords":\[([\w"\s,]+)]""")
 DESCRIPTION_REGEX = re.compile(r""""shortDescription":"([\w\s:,\\/.\-?=@!;\[\]()\"\'#~]+)",""")
 
-BASE_PAYLOAD = {
-    "context": {
-        "client": {
-            "hl": "en",
-            "gl": "GB",
-            "deviceMake": "",
-            "deviceModel": "",
-            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36,gzip(gfe)",
-            "clientName": "WEB",
-            "clientVersion": "2.20250509.01.01",
-            "osName": "Windows",
-            "osVersion": "10.0",
-            "originalUrl": "https://www.youtube.com/feed/trending",
-            "screenPixelDensity": 1,
-            "platform": "DESKTOP",
-            "clientFormFactor": "UNKNOWN_FORM_FACTOR",
-            "screenDensityFloat": 1.25,
-            "userInterfaceTheme": "USER_INTERFACE_THEME_DARK",
-            "timeZone": "Europe/London",
-            "browserName": "Chrome",
-            "browserVersion": "136.0.0.0",
-            "acceptHeader": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "screenWidthPoints": 1536,
-            "screenHeightPoints": 730,
-            "utcOffsetMinutes": 60,
-            "memoryTotalKbytes": "8000000"
-        },
-        "user": {
-            "lockedSafetyMode": False
-        },
-        "request": {
-            "useSsl": True,
-            "internalExperimentFlags": [],
-            "consistencyTokenJars": []
-        }
-    },
-    "browseId": "FEtrending",
+BASE_CLIENT = {
+    "hl": "en",
+    "gl": "GB",
+    "deviceMake": "",
+    "deviceModel": "",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36,gzip(gfe)",
+    "clientName": "WEB",
+    "clientVersion": "2.20250509.01.01",
+    "osName": "Windows",
+    "osVersion": "10.0",
+    "originalUrl": "https://www.youtube.com/feed/trending",
+    "screenPixelDensity": 1,
+    "platform": "DESKTOP",
+    "clientFormFactor": "UNKNOWN_FORM_FACTOR",
+    "screenDensityFloat": 1.25,
+    "userInterfaceTheme": "USER_INTERFACE_THEME_DARK",
+    "timeZone": "Europe/London",
+    "browserName": "Chrome",
+    "browserVersion": "136.0.0.0",
+    "acceptHeader": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "screenWidthPoints": 1536,
+    "screenHeightPoints": 730,
+    "utcOffsetMinutes": 60,
+    "memoryTotalKbytes": "8000000"
 }
 
-PODCAST_PAYLOAD = {
+BASE_PAYLOAD_A = {
     "context": {
-        "client": {
-            "hl": "en",
-            "gl": "GB",
-            "deviceMake": "",
-            "deviceModel": "",
-            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36,gzip(gfe)",
-            "clientName": "WEB",
-            "clientVersion": "2.20250509.01.01",
-            "osName": "Windows",
-            "osVersion": "10.0",
-            "originalUrl": "https://www.youtube.com/podcasts",
-            "screenPixelDensity": 1,
-            "platform": "DESKTOP",
-            "clientFormFactor": "UNKNOWN_FORM_FACTOR",
-            "screenDensityFloat": 1.25,
-            "userInterfaceTheme": "USER_INTERFACE_THEME_DARK",
-            "timeZone": "Europe/London",
-            "browserName": "Chrome",
-            "browserVersion": "136.0.0.0",
-            "acceptHeader": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "rolloutToken": "CPjJnIrMhbe9hgEQ4N_Lw62UjQMYoMb79aqajQM%3D",
-            "screenWidthPoints": 1536,
-            "screenHeightPoints": 730,
-            "utcOffsetMinutes": 60,
-            "memoryTotalKbytes": "8000000",
-            "mainAppWebInfo": {
-                "graftUrl": "/podcasts",
-                "pwaInstallabilityStatus": "PWA_INSTALLABILITY_STATUS_UNKNOWN",
-                "webDisplayMode": "WEB_DISPLAY_MODE_BROWSER",
-                "isWebNativeShareAvailable": True
-            }
-        },
+        "client": BASE_CLIENT,
         "user": {
             "lockedSafetyMode": False
         },
@@ -87,10 +43,34 @@ PODCAST_PAYLOAD = {
             "internalExperimentFlags": [],
             "consistencyTokenJars": []
         }
-    },
-    "browseId": "FEpodcasts_destination",
-    "params": "qgcCCAE%3D"
+    }
 }
+
+PODCAST_APP_WEB_INFO = {
+    "graftUrl": "/podcasts",
+    "pwaInstallabilityStatus": "PWA_INSTALLABILITY_STATUS_UNKNOWN",
+    "webDisplayMode": "WEB_DISPLAY_MODE_BROWSER",
+    "isWebNativeShareAvailable": True
+}
+
+
+def generate_podcast_payload() -> Dict[str, Any]:
+    payload = BASE_PAYLOAD_A
+    payload["context"]["client"]["mainAppWebInfo"] = PODCAST_APP_WEB_INFO
+    payload["context"]["client"]["originalUrl"] = "https://www.youtube.com/podcasts"
+    payload["params"] = "qgcCCAE%3D"
+    payload["browseId"] = "FEpodcasts_destination"
+
+    return payload
+
+
+def generate_base_payload(param: str) -> Dict[str, Any]:
+    payload = BASE_PAYLOAD_A
+    payload["params"] = param
+    payload["browseId"] = "FEtrending"
+
+    return payload
+
 
 TAG_BLACKLIST = ["", "i", "the", "my", "when", "how", "is"]
 

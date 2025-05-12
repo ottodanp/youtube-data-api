@@ -3,7 +3,7 @@ from typing import Dict, Any, List
 
 from aiohttp import ClientSession
 
-from data import BASE_PAYLOAD, VideoData, PODCAST_PAYLOAD
+from data import BASE_PAYLOAD, VideoData, PODCAST_PAYLOAD, generate_podcast_payload
 from parsing import parse_youtube_data, parse_podcast_details
 
 
@@ -35,7 +35,7 @@ async def load(session: ClientSession, endpoint: str) -> List[VideoData]:
 
 async def load_podcasts(session: ClientSession) -> List[VideoData]:
     async with session.post("https://www.youtube.com/youtubei/v1/browse?prettyPrint=false",
-                            json=PODCAST_PAYLOAD) as response:
+                            json=generate_podcast_payload()) as response:
         body = await response.json()
 
         return [VideoData(v) for v in parse_podcast_details(body)]
