@@ -1,10 +1,10 @@
-from asyncio import run
+from asyncio import run, gather
 from typing import Dict, Any, List
 
 from aiohttp import ClientSession
 
 from data import BASE_PAYLOAD, VideoData, PODCAST_PAYLOAD
-from parsing import parse_youtube_data, parse_podcast_details, VIDEO_DETAILS_REGEX
+from parsing import parse_youtube_data, parse_podcast_details
 
 
 async def get_cookies(session: ClientSession) -> None:
@@ -15,15 +15,6 @@ async def get_cookies(session: ClientSession) -> None:
     async with session.post(
             "https://consent.youtube.com/save?continue=https://www.youtube.com/%3FthemeRefresh%3D1&gl=GB&m=0&pc=yt&x=5&src=2&hl=en&bl=755513870&cm=2&set_eom=true") as consent_response:
         return
-
-
-async def get_video_details(session: ClientSession, video_id: str):
-    print(video_id)
-    async with session.get("https://youtube.com/watch?v=" + video_id) as response:
-        body = await response.text()
-        open("test.txt", "wb").write(body.encode(errors="ignore"))
-        data = VIDEO_DETAILS_REGEX.findall(body)
-        input(data)
 
 
 async def load(session: ClientSession, endpoint: str) -> List[VideoData]:
@@ -56,6 +47,10 @@ def inject_tab_payload(data: Dict[str, Any], endpoint: str) -> Dict[str, Any]:
     return data
 
 
+async def gather_video_details_mass(session: ClientSession, videos: List[VideoData]):
+    await gather(*[video.get_video_details(session) for video in videos])
+
+
 async def load_trending_videos(session: ClientSession) -> Dict[str, List[VideoData]]:
     videos = {"Podcasts": await load_podcasts(session)}
     for payload, category in [
@@ -67,12 +62,8 @@ async def load_trending_videos(session: ClientSession) -> Dict[str, List[VideoDa
         videos[category] = await load(session, payload)
 
     for cat in videos:
-        for video in videos[cat]:
-            tags = video.tags
-            if not tags:
-                continue
+        await gather_video_details_mass(session, videos[cat])
 
-            await get_video_details(session, "zDuJqlt1nhE")
     return videos
 
 

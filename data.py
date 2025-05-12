@@ -1,4 +1,10 @@
+import re
 from typing import Dict, Any, List, Optional
+
+from aiohttp import ClientSession
+
+KEYWORDS_REGEX = re.compile(r""""keywords":\[([\w"\s,]+)]""")
+DESCRIPTION_REGEX = re.compile(r""""shortDescription":"([\w\s:,\\/.\-?=@!;\[\]()\"\'#~]+)",""")
 
 BASE_PAYLOAD = {
     "context": {
@@ -86,8 +92,8 @@ PODCAST_PAYLOAD = {
     "params": "qgcCCAE%3D"
 }
 
-
 TAG_BLACKLIST = ["", "i", "the", "my", "when", "how", "is"]
+
 
 class VideoData:
     title: str = ""
@@ -98,6 +104,7 @@ class VideoData:
     upload_time: str = ""
     thumbnail_url: str = ""
     description: str = ""
+    keywords: List[str] = []
     dictionary: Dict[str, Any] = {}
 
     def __init__(self, video: Dict[str, Any]):
@@ -122,6 +129,24 @@ class VideoData:
 
     def to_dict(self) -> Dict[str, Any]:
         return self.dictionary
+
+    async def get_video_details(self, session: ClientSession):
+        async with session.get("https://youtube.com/watch?v=" + self.video_id) as response:
+            body = await response.text()
+            description = DESCRIPTION_REGEX.findall(body)
+            if len(description) > 0:
+                description = description[0]
+            keywords = KEYWORDS_REGEX.findall(body)
+            if len(keywords) != 0:
+                chunks = keywords[0].split(",")
+                self.keywords = [c.replace('"', "") for c in chunks]
+            else:
+                if len(description) != 0 and "#" in description[0]:
+                    self.keywords = [k.split(" ")[0] for k in description[0].split("#")[1:]]
+
+            self.dictionary["keywords"] = self.keywords
+            self.dictionary["description"] = self.description
+            self.description = description
 
     @property
     def tags(self) -> Optional[List[str]]:

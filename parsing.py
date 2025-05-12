@@ -1,8 +1,4 @@
 from typing import Dict, Any
-from re import compile
-
-VIDEO_DETAILS_REGEX = compile(r"""videoDetails":{".*"keywords":(\[[\w,\"\s.]+]).*"shortDescription":"(.*)",""")
-
 
 def tab_meets_requirements(tab: Dict[str, Any]) -> bool:
     return 'tabRenderer' in tab and 'content' in tab['tabRenderer'] and \
