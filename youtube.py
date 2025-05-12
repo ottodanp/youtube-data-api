@@ -3,7 +3,7 @@ from typing import Dict, Any, List
 
 from aiohttp import ClientSession
 
-from data import BASE_PAYLOAD, VideoData, PODCAST_PAYLOAD, generate_podcast_payload
+from data import VideoData, generate_podcast_payload, generate_base_payload
 from parsing import parse_youtube_data, parse_podcast_details
 
 
@@ -19,7 +19,7 @@ async def get_cookies(session: ClientSession) -> None:
 
 async def load(session: ClientSession, endpoint: str) -> List[VideoData]:
     async with session.post("https://www.youtube.com/youtubei/v1/browse?prettyPrint=false",
-                            json=inject_tab_payload(BASE_PAYLOAD, endpoint)) as response:
+                            json=inject_tab_payload(generate_base_payload(endpoint), endpoint)) as response:
         body = await response.json()
         contents = body.get("contents")
 

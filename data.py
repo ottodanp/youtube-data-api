@@ -4,7 +4,9 @@ from typing import Dict, Any, List, Optional
 from aiohttp import ClientSession
 
 KEYWORDS_REGEX = re.compile(r""""keywords":\[([\w"\s,]+)]""")
-DESCRIPTION_REGEX = re.compile(r""""shortDescription":"([\w\s:,\\/.\-?=@!;\[\]()\"\'#~]+)",""")
+DESCRIPTION_REGEX = re.compile(r"""attributedDescriptionBodyText":{"content":"([\w\s\\,'.:/ ]+)""")
+
+TAG_BLACKLIST = ["", "i", "the", "my", "when", "how", "is"]
 
 BASE_CLIENT = {
     "hl": "en",
@@ -32,7 +34,7 @@ BASE_CLIENT = {
     "memoryTotalKbytes": "8000000"
 }
 
-BASE_PAYLOAD_A = {
+BASE_PAYLOAD = {
     "context": {
         "client": BASE_CLIENT,
         "user": {
@@ -55,7 +57,7 @@ PODCAST_APP_WEB_INFO = {
 
 
 def generate_podcast_payload() -> Dict[str, Any]:
-    payload = BASE_PAYLOAD_A
+    payload = BASE_PAYLOAD
     payload["context"]["client"]["mainAppWebInfo"] = PODCAST_APP_WEB_INFO
     payload["context"]["client"]["originalUrl"] = "https://www.youtube.com/podcasts"
     payload["params"] = "qgcCCAE%3D"
@@ -65,14 +67,11 @@ def generate_podcast_payload() -> Dict[str, Any]:
 
 
 def generate_base_payload(param: str) -> Dict[str, Any]:
-    payload = BASE_PAYLOAD_A
+    payload = BASE_PAYLOAD
     payload["params"] = param
     payload["browseId"] = "FEtrending"
 
     return payload
-
-
-TAG_BLACKLIST = ["", "i", "the", "my", "when", "how", "is"]
 
 
 class VideoData:
