@@ -9,8 +9,6 @@ DESCRIPTION_REGEX = re.compile(r"""attributedDescriptionBodyText":{"content":"([
 TAG_BLACKLIST = ["", "i", "the", "my", "when", "how", "is"]
 
 BASE_CLIENT = {
-    "hl": "en",
-    "gl": "GB",
     "deviceMake": "",
     "deviceModel": "",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36,gzip(gfe)",
@@ -24,7 +22,6 @@ BASE_CLIENT = {
     "clientFormFactor": "UNKNOWN_FORM_FACTOR",
     "screenDensityFloat": 1.25,
     "userInterfaceTheme": "USER_INTERFACE_THEME_DARK",
-    "timeZone": "Europe/London",
     "browserName": "Chrome",
     "browserVersion": "136.0.0.0",
     "acceptHeader": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
@@ -115,6 +112,8 @@ class VideoData:
             description = DESCRIPTION_REGEX.findall(body)
             if len(description) > 0:
                 description = description[0]
+            else:
+                description = ""
             keywords = KEYWORDS_REGEX.findall(body)
             if len(keywords) != 0:
                 chunks = keywords[0].split(",")
@@ -123,9 +122,9 @@ class VideoData:
                 if len(description) != 0 and "#" in description[0]:
                     self.keywords = [k.split(" ")[0] for k in description[0].split("#")[1:]]
 
+            self.description = description
             self.dictionary["keywords"] = self.keywords
             self.dictionary["description"] = self.description
-            self.description = description
 
     @property
     def tags(self) -> Optional[List[str]]:
@@ -138,6 +137,10 @@ class VideoData:
                 tags.append(t)
 
         return tags if len(tags) > 0 else None
+
+    @property
+    def keyword_string(self) -> str:
+        return "#".join(self.keywords)
 
     @staticmethod
     def _extract_tags(string: str) -> List[str]:
