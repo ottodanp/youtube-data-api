@@ -3,6 +3,8 @@ from typing import List, Any, Dict
 
 from quart import Quart
 
+from data import VideoData
+
 quart = Quart(__name__)
 db = connect("trending.db")
 
@@ -34,17 +36,10 @@ def get_all_data(category: str) -> List[Dict[str, Any]]:
     return [parse_db_output(r) for r in results]
 
 
-@quart.route("/data/<category>")
-async def trending_data(category):
-    return get_all_data(category)
-
-
-@quart.route("/tags/<category>")
-async def trending_tags(category):
-    results = get_all_data(category)
+def filter_tags(videos: List[Dict[str, Any]]) -> List[List[str]]:
     trending_tags_result = []
-    for r in results:
-        tags = r["keywords"]
+    for v in videos:
+        tags = v["keywords"]
         if len(tags) == 0:
             continue
         if len(tags) == 1 and tags[0] == "":
@@ -54,6 +49,28 @@ async def trending_tags(category):
         continue
 
     return trending_tags_result
+
+
+@quart.route("/data/<category>")
+async def trending_data(category):
+    return get_all_data(category)
+
+
+@quart.route("/tags/<category>")
+async def trending_tags(category):
+    results = get_all_data(category)
+    return filter_tags(results)
+
+
+@quart.route("/stats")
+async def stats():
+    videos = get_all_data("all")
+    tags = filter_tags(videos)
+
+    return {
+        "videos": len(videos),
+        "tags": len(tags)
+    }
 
 
 if __name__ == '__main__':

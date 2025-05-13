@@ -63,7 +63,7 @@ async def load_trending_videos(session: ClientSession) -> Dict[str, List[VideoDa
 
     for cat in videos:
         await gather_video_details_mass(session, videos[cat])
-
+    print(videos)
     return videos
 
 
