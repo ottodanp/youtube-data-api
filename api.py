@@ -1,9 +1,8 @@
+from datetime import datetime
 from sqlite3 import connect
 from typing import List, Any, Dict
 
 from quart import Quart
-
-from data import VideoData
 
 quart = Quart(__name__)
 db = connect("trending.db")
@@ -64,12 +63,17 @@ async def trending_tags(category):
 
 @quart.route("/stats")
 async def stats():
+    cur = db.cursor()
     videos = get_all_data("all")
     tags = filter_tags(videos)
+    query = "SELECT MAX(timestamp) FROM videos"
+    cur.execute(query)
+    timestamp = cur.fetchone()[0]
 
     return {
         "videos": len(videos),
-        "tags": len(tags)
+        "tags": len(tags),
+        "last_scrape": datetime.fromtimestamp(timestamp)
     }
 
 
