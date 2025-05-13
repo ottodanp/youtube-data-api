@@ -74,4 +74,4 @@ async def stats():
 
 
 if __name__ == '__main__':
-    quart.run(host="0.0.0.0")
+    quart.run(host="0.0.0.0", port=8080)
