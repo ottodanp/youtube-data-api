@@ -1,10 +1,11 @@
 from asyncio import run, sleep
+from datetime import datetime
+from sqlite3 import connect, Connection
 
 from aiohttp import ClientSession
 
 from data import VideoData
 from youtube import load_trending_videos
-from sqlite3 import connect, Connection
 
 RE_SCRAPE_DELAY = 60 * 60 * 60
 
@@ -14,14 +15,15 @@ def sanitize(item: str) -> str:
 
 
 def insert_video_data(connection: Connection, video: VideoData, category: str):
+    timestamp = datetime.now().timestamp()
     cur = connection.cursor()
     query = f"""SELECT * FROM videos WHERE video_id = \"{video.video_id}\""""
     cur.execute(query)
     if len(cur.fetchall()) != 0:
         print("returning")
         return
-    query = f"""INSERT INTO videos (video_id, title, channel_name, view_count, duration, upload_time, thumbnail_url, description, keywords, category)
-    VALUES ("{video.video_id}", "{sanitize(video.title)}", "{video.channel_name}", "{video.view_count}", "{video.duration}", "{video.upload_time}", "{video.thumbnail_url}", "{sanitize(video.description)}", "{video.keyword_string}", "{category}")"""
+    query = f"""INSERT INTO videos (video_id, title, channel_name, view_count, duration, upload_time, thumbnail_url, description, keywords, category, timestamp)
+    VALUES ("{video.video_id}", "{sanitize(video.title)}", "{video.channel_name}", "{video.view_count}", "{video.duration}", "{video.upload_time}", "{video.thumbnail_url}", "{sanitize(video.description)}", "{video.keyword_string}", "{category}", {timestamp})"""
     cur.execute(query)
     connection.commit()
 
@@ -39,7 +41,8 @@ def create_tables(connection: Connection):
         thumbnail_url TEXT,
         description TEXT,
         keywords TEXT,
-        category TEXT)"""
+        category TEXT,
+        timestamp INTEGER)"""
     cur.execute(query)
     connection.commit()
 

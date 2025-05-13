@@ -13,7 +13,7 @@ def parse_video_renderer(video_renderer: Dict[str, Any]) -> Optional[Dict[str, A
     video_id = video_renderer.get("videoId")
     title = extract_text(video_renderer.get("title", {}).get("runs", []))
     description = extract_text(video_renderer.get("descriptionSnippet", {}).get("runs", []))
-    view_count = video_renderer.get("viewCountText", {}).get("simpleText")
+    view_count = int(video_renderer.get("viewCountText", {}).get("simpleText").split(" ")[0].replace(",", ""))
     duration = video_renderer.get("lengthText", {}).get("simpleText")
     upload_time = video_renderer.get("publishedTimeText", {}).get("simpleText")
     channel_name = extract_text(video_renderer.get("longBylineText", {}).get("runs", []))
