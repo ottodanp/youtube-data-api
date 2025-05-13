@@ -20,8 +20,8 @@ def insert_video_data(connection: Connection, video: VideoData, category: str):
     query = f"""SELECT * FROM videos WHERE video_id = \"{video.video_id}\""""
     cur.execute(query)
     if len(cur.fetchall()) != 0:
-        print("returning")
         return
+    print("inserting " + video.video_id)
     query = f"""INSERT INTO videos (video_id, title, channel_name, view_count, duration, upload_time, thumbnail_url, description, keywords, category, timestamp)
     VALUES ("{video.video_id}", "{sanitize(video.title)}", "{video.channel_name}", "{video.view_count}", "{video.duration}", "{video.upload_time}", "{video.thumbnail_url}", "{sanitize(video.description)}", "{video.keyword_string}", "{category}", {timestamp})"""
     cur.execute(query)
