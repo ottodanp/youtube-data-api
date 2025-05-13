@@ -7,7 +7,7 @@ from aiohttp import ClientSession
 from data import VideoData
 from youtube import load_trending_videos
 
-RE_SCRAPE_DELAY = 60 * 60 * 60
+RE_SCRAPE_DELAY = 60 * 30
 
 
 def sanitize(item: str) -> str:
