@@ -57,6 +57,7 @@ async def main():
         videos = await load_trending_videos(session)
         for cat in videos:
             for video in videos[cat]:
+                print(video.keyword_string)
                 if not insert_video_data(db, video, cat):
                     skipped += 1
                 else:
