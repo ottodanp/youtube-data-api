@@ -114,6 +114,7 @@ class VideoData:
                 description = description[0]
             else:
                 description = ""
+            input(body)
             keywords = KEYWORDS_REGEX.findall(body)
             if len(keywords) != 0:
                 chunks = keywords[0].split(",")
