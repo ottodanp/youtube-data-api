@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlite3 import connect
 from typing import List, Any, Dict
 
-from quart import Quart
+from quart import Quart, jsonify
 
 quart = Quart(__name__)
 db = connect("trending.db")
@@ -52,13 +52,13 @@ def filter_tags(videos: List[Dict[str, Any]]) -> List[List[str]]:
 
 @quart.route("/data/<category>")
 async def trending_data(category):
-    return get_all_data(category)
+    return jsonify(get_all_data(category))
 
 
 @quart.route("/tags/<category>")
 async def trending_tags(category):
     results = get_all_data(category)
-    return filter_tags(results)
+    return jsonify(filter_tags(results))
 
 
 @quart.route("/stats")
@@ -70,11 +70,11 @@ async def stats():
     cur.execute(query)
     timestamp = cur.fetchone()[0]
 
-    return {
+    return jsonify({
         "videos": len(videos),
         "tags": len(tags),
         "last_scrape": datetime.fromtimestamp(timestamp)
-    }
+    })
 
 
 if __name__ == '__main__':
