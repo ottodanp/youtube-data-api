@@ -7,7 +7,7 @@ from aiohttp import ClientSession
 from data import VideoData
 from youtube import load_trending_videos
 
-RE_SCRAPE_DELAY = 60 * 10
+RE_SCRAPE_DELAY = 60 * 30
 
 
 def sanitize(item: str) -> str:
@@ -29,7 +29,7 @@ def insert_video_data(connection: Connection, video: VideoData, category: str)->
     return True
 
 
-def create_tables(connection: Connection):
+def create_tables(connection: Connection) -> None:
     cur = connection.cursor()
     query = """
     CREATE TABLE IF NOT EXISTS videos (
@@ -48,7 +48,7 @@ def create_tables(connection: Connection):
     connection.commit()
 
 
-async def main():
+async def main() -> None:
     db = connect("trending.db")
     create_tables(db)
     inserted = 0
@@ -57,7 +57,6 @@ async def main():
         videos = await load_trending_videos(session)
         for cat in videos:
             for video in videos[cat]:
-                print(video.keyword_string)
                 if not insert_video_data(db, video, cat):
                     skipped += 1
                 else:

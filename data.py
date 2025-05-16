@@ -53,6 +53,11 @@ PODCAST_APP_WEB_INFO = {
 }
 
 
+class CaptchaDetected(Exception):
+    def __init__(self, source: str):
+        super().__init__(f"Captcha raised. Source: {source}")
+
+
 def generate_podcast_payload() -> Dict[str, Any]:
     payload = BASE_PAYLOAD
     payload["context"]["client"]["mainAppWebInfo"] = PODCAST_APP_WEB_INFO
@@ -106,15 +111,16 @@ class VideoData:
     def to_dict(self) -> Dict[str, Any]:
         return self.dictionary
 
-    async def get_video_details(self, session: ClientSession):
+    async def get_video_details(self, session: ClientSession) -> None:
         async with session.get("https://youtube.com/watch?v=" + self.video_id) as response:
             body = await response.text()
+            if "Our systems have detected unusual traffic from your computer network." in body:
+                raise CaptchaDetected("get_video_details")
             description = DESCRIPTION_REGEX.findall(body)
             if len(description) > 0:
                 description = description[0]
             else:
                 description = ""
-            input(body)
             keywords = KEYWORDS_REGEX.findall(body)
             if len(keywords) != 0:
                 chunks = keywords[0].split(",")

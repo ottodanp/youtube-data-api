@@ -6,6 +6,8 @@ from aiohttp import ClientSession
 from data import VideoData, generate_podcast_payload, generate_base_payload
 from parsing import parse_youtube_data, parse_podcast_details
 
+SCRAPER_THREADS = 10
+
 
 async def get_cookies(session: ClientSession) -> None:
     async with session.get("https://www.youtube.com/") as response:
@@ -47,8 +49,10 @@ def inject_tab_payload(data: Dict[str, Any], endpoint: str) -> Dict[str, Any]:
     return data
 
 
-async def gather_video_details_mass(session: ClientSession, videos: List[VideoData]):
-    await gather(*[video.get_video_details(session) for video in videos])
+async def gather_video_details_mass(session: ClientSession, videos: List[VideoData]) -> None:
+    chunks = [videos[i:i + SCRAPER_THREADS] for i in range(0, len(videos), SCRAPER_THREADS)]
+    for chunk in chunks:
+        await gather(*[video.get_video_details(session) for video in chunk])
 
 
 async def load_trending_videos(session: ClientSession) -> Dict[str, List[VideoData]]:
@@ -67,7 +71,7 @@ async def load_trending_videos(session: ClientSession) -> Dict[str, List[VideoDa
     return videos
 
 
-async def main():
+async def main() -> None:
     async with ClientSession() as session:
         await load_trending_videos(session)
 

@@ -18,8 +18,6 @@ async def get_video_details(session: ClientSession, video_id: str):
             keywords = keywords.replace("[", "").replace("]", "")
             keyword_items = keywords.split(",")
             keywords = [k.replace('"', "") for k in keyword_items]
-        print(keywords)
-        print(description)
 
 
 async def main():
